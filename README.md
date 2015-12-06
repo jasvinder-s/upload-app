@@ -1,15 +1,18 @@
+In upload-app directory, run following:
+
+node server.js
+
+For details, refer to Project Wiki
+
+Further develpment:
+Pagination
+Image like and comments
+
+-----
+References:
+
 Local authentication with passport
 https://scotch.io/tutorials/easy-node-authentication-setup-and-local
---------------
-Image resize with lwip for creating thumbnails
----------------
-Commit
-Upload to server
-github documentation and link to app
- 
-Next:
-Pagination
-Photos likes and comments
-Page refresh
 
-----
+Image resize with lwip for creating thumbnails
+
