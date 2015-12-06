@@ -1,10 +1,17 @@
 var Image = require('../models/image');
 
 var multer  = require('multer');
+var fs = require('fs');
+var lwip = require('lwip');
+
+var logger = require('./../public/libs/logger');
+var uploadsFolder = './public/images/uploads';  
+
+var path = require('path'); 
 
 module.exports = function(app, passport) {
 
-	app.use(multer({ dest: './public/images/uploads/',
+	app.use(multer({ dest: uploadsFolder,
 		
 		rename: function (fieldname, filename) {
 			renamedImage = filename+Date.now();
@@ -12,118 +19,193 @@ module.exports = function(app, passport) {
 		},
 		
 		onFileUploadStart: function (file) {
-		  console.log(file.originalname + ' is starting ...')
+			logger.debug(file.originalname + ' is starting ...');
 		},
 		
-		onFileUploadComplete: function (file) {
-		  console.log(file.fieldname + ' uploaded to  ' + file.path)
-		  done = true;
-		}
-		
+		onFileUploadComplete: function (file, req, res) {
+			logger.debug(file.fieldname + ' uploaded to  ' + file.path)
+			logger.debug('renamedImage ' + renamedImage);	  
+		   
+			var newImageName = renamedImage+"."+file.extension;
+			logger.debug('newImageName ' + newImageName);
+			try {
+				createImageThumbnail(newImageName, req, res);
+			} catch (err) {
+				logger.error(err);
+			}	  
+		} 	
+		 
 	}));
 	
-    // HOME PAGE (with login links)
-    app.get('/', function(req, res) {
-        res.render('index.ejs'); // load the index.ejs file
+	app.post('/api/photo',function(req,res){
+		//multer middleware already handled photos upload
+		logger.debug('api/photo');    	     
     });
-
-    // LOGIN 
-    // show the login form
-    app.get('/login', function(req, res) {
-        // render the page and pass in any flash data if it exists
-        res.render('login.ejs', { message: req.flash('loginMessage') }); 
+	
+	app.get('/', function(req, res) {
+		res.render('index', { title: 'Express' });
+	});
+	
+	app.get('/thumbnails', function(req, res) {
+		logger.debug('routes.js#/thumbnails');
+		var query = Image.find().sort({_id: -1});	
+		 
+		query.exec(function(err, images) {
+			 res.send(images)
+		}); 
+	});
+	
+	//route to log in 
+    app.post('/login', function(req, res, next) {
+    	logger.debug("routes.js#login");
+    	passport.authenticate('local-login', function(err, user, info) {
+			if (err) {
+			  return res.status(500).json({err: err});
+			}
+			if (!user) {
+			  return res.status(401).json({err: info});
+			}
+			req.logIn(user, function(err) {
+				if (err) {
+			    return res.status(500).json({err: 'Could not log in user'});
+			}
+		    res.status(200).json({status: 'Login successful!', user: user});
+		    });
+    	})(req, res, next);
     });
     
-    // show the signup form
-    app.get('/signup', function(req, res) {
-        // render the page and pass in any flash data if it exists
-        res.render('signup.ejs', { message: req.flash('signupMessage') });
+    app.post('/signup', function(req, res, next) {
+    	logger.debug("routes.js#signup");
+    	passport.authenticate('local-signup', function(err, user, info) {
+    	    if (err) {
+    	      return res.status(500).json({err: err});
+    	    }
+    	    
+    	    if(user) {
+    	    	res.status(200).json({status: 'Signup successful', user: user});
+    	    } else {
+    	    	res.status(500).json({status: 'Signup failed', err: info.message});
+    	    }
+    	  })(req, res, next);
     });
-
-    // process the signup form
-    app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : '/profile', // redirect to the secure profile section
-        failureRedirect : '/signup', // redirect back to the signup page if there is an error
-        failureFlash : true // allow flash messages
-    }));
     
-    app.post('/login', passport.authenticate('local-login', {
-        successRedirect : '/profile', // redirect to the secure profile section
-        failureRedirect : '/login', // redirect back to the signup page if there is an error
-        failureFlash : true // allow flash messages
-    }));   
     
-    // process the signup form
-    app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect : '/profile', // redirect to the secure profile section
-        failureRedirect : '/signup', // redirect back to the signup page if there is an error
-        failureFlash : true // allow flash messages
-    }));
-
-    // PROFILE SECTION =====================
-    // we will want this protected so you have to be logged in to visit
-    // we will use route middleware to verify this (the isLoggedIn function)
     app.get('/profile', isLoggedIn, function(req, res) {
+    	logger.debug('routes.js# /profile');
     	var user = req. user;   	 
-    	
-    	var query = Image.find({});
+    	logger.debug('user ' + user);
+    	var query = Image.find().sort({_id: -1});
     	query.where('user', user);    	
     	 
     	query.exec(function(err, images) {
     		var userImages = [];
-    		//console.log(images);
-    		//var userImages = [];
+    		
     		for(var i = 0;i<images.length;i++){
-    	         userImages.push(images[i].name);    	         
+    			var userImage = {};
+    			 userImage.name = images[i].name;
+    			 userImages.push(userImage);
     	    }
-    		res.render('profile.ejs', {
-                user: req.user, // get the user out of session and pass to template
-                userImages: userImages
-                 
-            });
-    	}); 
-    	
-    	 
-        
+    		logger.debug(userImages);
+    		res.status(200).json(userImages);
+    	});        
     });
-
+    
     // LOGOUT ==============================
     app.get('/logout', function(req, res) {
         req.logout();
         res.redirect('/');
-    });
-    
-    //Upload page
-    app.get('/upload',isLoggedIn, function(req,res) {
-    	//console.log(__dirname);
-        //res.sendFile(__dirname + "/views/upload.html");
-    	res.render("upload", "");
-    	//res.sendfile('upload', {root: '../views'});
-    });    
-    
-    app.post('/api/photo',function(req,res){
-    	console.log('api/photo');
-    	console.log(done);
-    	  if(done == true) {
-    	    console.log(req.files);  
-    	    console.log('----------->');
-    	    var newImage = new Image();
-    	    newImage.name = renamedImage+"."+req.files.file.extension;
-    	    
-    	    
-    	    newImage.user = req.user;
-    	    // save the image
-            newImage.save(function(err, newImage) {
-                if (err)
-                    throw err;
-                //return done(null, newImage);
-            });
-    	    
-    	    res.end("File uploaded.");
-    	  }
-    });
+    });  
 };
 
+function createImageThumbnail(imageName, req, res) {
+	var srcImagePath = uploadsFolder + "/" + imageName;
+	var thumbnailImagePath = uploadsFolder + "/thumbnails/thumbnail_" + imageName;
+	logger.debug('createImageThumbnail srcImagePath ' + srcImagePath);
+	logger.debug('createImageThumbnail destImagePath' + thumbnailImagePath);
+	
+	var lwipImage;
+    lwip.open(srcImagePath , function(err, image) {
+    	logger.debug('lwip open');   	 
+    	lwipImage = image;
+    	if(err) {
+    		logger.debug('err');
+    		var lastIndexOfDot = srcImagePath.lastIndexOf('.');
+    		var extension = srcImagePath.substring(lastIndexOfDot);
+    		logger.debug('1. extension ' +extension);
+    		    		 
+    		if(extension == extension.toUpperCase()) {
+    			extension = extension.toLowerCase();
+    		} else {
+    			extension = extension.toUpperCase();
+    		}
+    		
+    		logger.debug('2. extension  ' +extension);
+    		var alternateImageName = srcImagePath.substring(0,lastIndexOfDot);
+    		alternateImageName = alternateImageName  + extension;
+    		logger.debug('alternateImageName ' + alternateImageName);
+    		lwip.open(alternateImageName , function(err, image) {
+    			if(err) {
+    				res.end('Error uploading --------->');
+    			}    			
+    			image.resize(340, function(err, image) {
+    				logger.debug('image.resize for alternate image');
+    	    		if(err) {
+    	    			res.end('Error uploading alternateImageName#resize ' + alternateImageName);
+    	    		}
+    	    		image.writeFile(thumbnailImagePath, function(err) {
+    	    			logger.debug('image.writeFile');
+    	    			if (err) {
+    	    				res.end('Error uploading alternateImageName#writeFile ' + alternateImageName);
+    	    			}
+    	    			logger.debug('Thumbnail created');
+    	    			var newImage = new Image();
+    	    			newImage.user = req.user;
+    	    			newImage.name = alternateImageName;
+    	    			newImage.save(function(err, newImage) {
+    		                 if (err) {
+    		                	 res.end('Error uploading alternateImageName#save ' + alternateImageName);
+    		                 } 
+    		                 res.end('Successfully uploaded ' + alternateImageName);  
+    		             });    	    			 	    			
+    	    		});
+    	    	}); 
+    		});		
+    		
+    	}
+    	logger.debug('resize');
+    	if(lwipImage !== undefined) {
+    		lwipImage.resize(340, function(err, image) {
+    			logger.debug('image.resize');
+	    		if(err) {
+	    			logger.error('lwipImage.resize#err');
+	    			res.end('Unable to upload#resize ' + imageName);
+	    		}
+	    		image.writeFile(thumbnailImagePath, function(err) {
+	    			logger.debug('image.writeFile');
+	    			if (err) {
+	    				logger.error('lwipImage.resize#writeFile err');
+	    				res.end('Unable to upload ' + imageName);
+	    			}
+	    			logger.debug('Thumbnail created');
+	    			var newImage = new Image();
+	    			newImage.user = req.user;
+	    			newImage.name = imageName;
+	    			newImage.save(function(err, newImage) {
+		                 if (err) {
+		                	 logger.error('lwipImage.resize#writeFile#save err');
+			    			 res.end('Unable to upload lwipImage.resize#writeFile#save err ' + imageName);
+		                 }
+		                 logger.debug('newImage.save');
+		                 res.end('Sucessfully uploaded ' + imageName);
+		             });	    			
+	    		});
+	    	});  	 
+    	}
+    });
+}
+
+ 
+ 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
 
