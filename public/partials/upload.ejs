@@ -1,0 +1,17 @@
+<div class="ng-scope" ng-app="fileUpload" ng-controller="UploadCtrl">
+  
+    Drop File:
+    <div ngf-drop="" ngf-select="" ng-model="files" class="drop-box ng-pristine ng-valid" ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true" accept="image/*,application/pdf">Drop pdfs or images here or click to upload</div>
+    <div style="display: none;" ngf-no-file-drop="">File Drag/Drop is not supported for this browser</div>
+    
+    Files:
+    <ul>
+        <li ng-repeat="f in files" style="font:smaller">{{f.name}}</li>
+    </ul>
+    Upload Log:
+    <pre>{{log}}</pre>
+</div>
+<input tabindex="-1" style="visibility: hidden; position: absolute; overflow: hidden; width: 0px; height: 0px; z-index: -100000; border: medium none; margin: 0px; padding: 0px;" ngf-select="" ng-model="files" ngf-multiple="multiple" type="file">
+<input tabindex="-1" style="visibility: hidden; position: absolute; overflow: hidden; width: 0px; height: 0px; z-index: -100000; border: medium none; margin: 0px; padding: 0px;" ngf-select="" ngf-change="upload($files)" ngf-multiple="multiple" type="file">
+<input tabindex="-1" style="visibility: hidden; position: absolute; overflow: hidden; width: 0px; height: 0px; z-index: -100000; border: medium none; margin: 0px; padding: 0px;" ngf-drop="" ngf-select="" ng-model="files" ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true" accept="image/*,application/pdf" multiple="multiple" type="file">
+   

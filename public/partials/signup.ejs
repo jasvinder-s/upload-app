@@ -1,0 +1,36 @@
+<div class="col-sm-6 col-sm-offset-3">
+
+    <h1><span class="fa fa-sign-in"></span>Signup</h1>
+ 
+    <div ng-show="error" class="alert alert-danger">
+        {{errorMessage}}
+    </div>
+    
+    <form class="form" ng-submit="signup()">
+        <div class="form-group">
+              <label>Username</label>
+               <input type="text" class="form-control" name="username" ng-model="signupForm.username" required
+               ng-pattern="/^[_a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/">
+        </div>
+        
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password" ng-model="signupForm.password" required>
+            
+            <label>Password</label>
+            <input type="password" class="form-control" name="password" ng-model="signupForm.repeatPassword" required>
+        </div>
+        
+        <div>
+            <button type="submit" class="btn btn-default" ng-disabled="disabled">Signup</button>
+        </div>
+        
+    </form>
+    
+    <hr>
+
+    <p>Already have an account? <a ui-sref="login">Login</a></p>
+    <p>Or go <a ui-sref="home">home</a></p>
+
+</div> 
+

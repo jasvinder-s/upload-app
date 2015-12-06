@@ -1,28 +1,15 @@
-# upload-app readme file initial
-
-
 Local authentication with passport
 https://scotch.io/tutorials/easy-node-authentication-setup-and-local
-
+--------------
+Image resize with lwip for creating thumbnails
 ---------------
-MONGODB
-To test database etc, in terminal type
-mongo
+Commit
+Upload to server
+github documentation and link to app
+ 
+Next:
+Pagination
+Photos likes and comments
+Page refresh
 
-and then in mongo shell
-help
-
-To show list of databases
-show dbs
-
-To switch to upload-app db
-use upload-app
-
-To show tables( collections in mongo)
-show collections
-
-To show rows(documents in mongo)
-db.collection.find()
-
-To delete rows(documents)
-db.collection.remove()
+----

@@ -1,26 +1,71 @@
 <!doctype html>
 <html>
-<head>
-    <title>Node Authentication</title>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-</head>
-<body>
-<div class="container">
-
-    <div class="jumbotron text-center">
-        <h1><span class="fa fa-lock"></span> Node Authentication</h1>
-
-        <p>Login or Register with:</p>
-
-        <a href="/login" class="btn btn-default"><span class="fa fa-user"></span> Local Login</a>
-        <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a>
-    </div>
-
-
-
-
-</div>
-</body>
+    <head>
+        <base href="/">
+        <meta charset="utf-8"/>
+        
+        <title>Image Gallery</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js"></script>
+        <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.3.js"></script>
+         
+        <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+     
+        <script src="angularService.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/5.0.9/ng-file-upload.js"></script>
+        <script type="text/javascript" src="upload.js"></script>
+        
+        <script src="angularModule.js"></script> 
+    </head>
+    <body ng-app="ImageGalleryApp">
+        <div class="container" ng-controller="ModalController">
+            
+             <div class="top-buttons" style="text-align:right">
+                <a ui-sref=".login" class="btn btn-default" ng-show="state.current.name == 'home' && user == null"><span class="fa fa-user"></span> Login</a>
+                <a ui-sref=".signup" class="btn btn-default" ng-show="state.current.name == 'home' && user == null"><span class="fa fa-user"></span>Signup</a>
+                <a ui-sref=".home" class="btn btn-default" ng-show="state.current.name == 'upload'" ng-cloak><span class="fa fa-home"></span>Home</a>
+                <a ui-sref=".profile" class="btn btn-default" ng-hide="user == null || state.current.name == 'profile'"><span class="fa fa-user"></span>Profile</a>
+                <a href="/logout" class="btn btn-default" ng-show="user != null && state.current.name == 'home'"><span class="fa fa-user"></span>Logout</a>
+             </div> 
+              
+            <div>
+                <script type="text/ng-template" id="modalContent.html">
+                    <div>
+                         <div class="previous" ng-click="previous()" ng-hide="index == 0">
+                            <img src="/images/previous.png"> 
+                        </div>  
+                        <img src="/images/uploads/{{items.images[index].name}}" style="width: 100%;"> 
+                        <div class="next" ng-click="next()" ng-hide="index == (items.images.length -1)">
+                            <img src="/images/next.png"> 
+                        </div>
+                    </div>            
+                </script>       
+            </div>     
+             
+            <div ui-view></div>  
+           
+        </div>
+    </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -12,32 +12,26 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 
-app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/controllers'));
+var myTime = 432000;
 
+var compression = require('compression');
+var path = require('path');
 
-//Required for file file upload i.e <form enctype="multipart/form-data">
-//var multer  = require('multer');
-/*Configure the multer.*/
-/*app.use(multer({ dest: './public/images/uploads/',
-	
-	rename: function (fieldname, filename) {
-		renamedImage = filename+Date.now();
-	    return renamedImage;
-	},
-	
-	onFileUploadStart: function (file) {
-	  console.log(file.originalname + ' is starting ...')
-	},
-	
-	onFileUploadComplete: function (file) {
-	  console.log(file.fieldname + ' uploaded to  ' + file.path)
-	  done = true;
-	}
-	
-}));*/
+app.use(compression()); // optional
+
+// Name the directories which will be used to serve static files
+app.use(express.static(__dirname + '/public'),  { maxAge: myTime });
+app.use(express.static(__dirname + '/controllers'),  { maxAge: myTime });
+app.use(express.static(__dirname + '/services'),  { maxAge: myTime });
+ 
+
+//app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
 var configDB = require('./config/database.js');
+
+var logger = require('./public/libs/logger');
 
 // configuration ===============================================================
 mongoose.connect(configDB.url); // connect to our database
@@ -49,20 +43,19 @@ app.use(morgan('dev')); // log every request to the console
 app.use(cookieParser()); // read cookies (needed for auth)
 app.use(bodyParser()); // get information from html forms
 
-app.set('view engine', 'ejs'); // set up ejs for templating
+//app.set('view engine', 'ejs'); // set up ejs for templating
 
 // required for passport
-app.use(session({ secret: 'ilovescotchscotchyscotchscotch' })); // session secret
+//Secret should be stored in some configuration file
+app.use(session({ secret: 'myappsecret' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
-
-
-// routes ======================================================================
+// routes =====================================================================
 //load our routes and pass in our app and fully configured passport
 require('./app/routes.js')(app, passport); 
 
 // launch ======================================================================
 app.listen(port);
-console.log('The magic happens on port ' + port);
+logger.debug('The magic happens on port ' + port);
