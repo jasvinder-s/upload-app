@@ -16,7 +16,7 @@ For details, refer to Project Wiki
 
 Further develpment:
 Pagination
-Image like and comments
+Image likes and comments
 
 -----
 References:
