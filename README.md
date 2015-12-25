@@ -11,6 +11,7 @@ Bootstrap, angular, Node.js
 In upload-app directory, run following:
 
 npm install compression
+
 node server.js
 
 For details, refer to Project Wiki
